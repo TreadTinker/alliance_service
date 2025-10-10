@@ -56,7 +56,7 @@ class AdminController
                 <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 25px; border-radius: 10px;">
                     <h3 style="margin-bottom: 10px; font-size: 14px; opacity: 0.9;">Пользователи</h3>
                     <div style="font-size: 32px; font-weight: bold;"><?= $stats['total_users'] ?></div>
-                    <div style="font-size: 12px; opacity: 0.8;">Всего зарегистрировано</div>
+                    <div style="font-size: 12px; opacity: 0.8;">Всего зарегистрировано 12</div>
                 </div>
 
                 <div style="background: linear-gradient(135deg, #f093fb, #f5576c); color: white; padding: 25px; border-radius: 10px;">
