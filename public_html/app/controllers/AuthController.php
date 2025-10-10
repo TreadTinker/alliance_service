@@ -13,9 +13,9 @@ class AuthController extends Controller
 
     public function login()
     {
-        // Если уже авторизован - редирект
+        // Если уже авторизован - редирект в зависимости от роли
         if ($this->auth->isLoggedIn()) {
-            $this->redirect('/admin');
+            $this->redirectBasedOnRole();
         }
 
         $error = '';
@@ -33,7 +33,7 @@ class AuthController extends Controller
                 
                 if ($user && password_verify($password, $user['password'])) {
                     $this->auth->login($user);
-                    $this->redirect('/admin');
+                    $this->redirectBasedOnRole();
                 } else {
                     $error = 'Неверный email или пароль';
                 }
@@ -49,9 +49,9 @@ class AuthController extends Controller
 
     public function register()
     {
-        // Если уже авторизован - редирект
+        // Если уже авторизован - редирект в зависимости от роли
         if ($this->auth->isLoggedIn()) {
-            $this->redirect('/admin');
+            $this->redirectBasedOnRole();
         }
 
         $errors = [];
@@ -73,24 +73,49 @@ class AuthController extends Controller
             $password = $_POST['password'] ?? '';
             $confirm_password = $_POST['confirm_password'] ?? '';
 
-            // Валидация (остается без изменений)
-            // ... существующий код валидации ...
+            // Валидация
+            if (empty($formData['email'])) {
+                $errors['email'] = 'Email обязателен для заполнения';
+            } elseif (!filter_var($formData['email'], FILTER_VALIDATE_EMAIL)) {
+                $errors['email'] = 'Введите корректный email';
+            } elseif ($this->userModel->userExists($formData['email'])) {
+                $errors['email'] = 'Пользователь с таким email уже существует';
+            }
+
+            if (empty($formData['first_name'])) {
+                $errors['first_name'] = 'Имя обязательно для заполнения';
+            } elseif (strlen($formData['first_name']) < 2) {
+                $errors['first_name'] = 'Имя должно содержать минимум 2 символа';
+            }
+
+            if (empty($password)) {
+                $errors['password'] = 'Пароль обязателен для заполнения';
+            } elseif (strlen($password) < 6) {
+                $errors['password'] = 'Пароль должен содержать минимум 6 символов';
+            }
+
+            if ($password !== $confirm_password) {
+                $errors['confirm_password'] = 'Пароли не совпадают';
+            }
 
             // Если ошибок нет - создаем пользователя
             if (empty($errors)) {
                 $userId = $this->userModel->createUser(
                     $formData['email'],
                     $password,
-                    'user',
+                    'user', // роль по умолчанию
                     $formData['first_name'],
                     $formData['last_name'],
                     $formData['phone']
                 );
 
                 if ($userId) {
+                    // Автоматически логиним пользователя после регистрации
                     $user = $this->userModel->findByEmail($formData['email']);
                     $this->auth->login($user);
-                    $this->redirect('/admin?welcome=1');
+                    
+                    // После регистрации всегда редирект на главную
+                    $this->redirect('/?welcome=1');
                 } else {
                     $errors['general'] = 'Ошибка при создании пользователя. Попробуйте позже.';
                 }
@@ -108,5 +133,17 @@ class AuthController extends Controller
     {
         $this->auth->logout();
         $this->redirect('/login');
+    }
+
+    /**
+     * Редирект в зависимости от роли пользователя
+     */
+    private function redirectBasedOnRole()
+    {
+        if ($this->auth->isAdmin() || $this->auth->isModerator()) {
+            $this->redirect('/admin');
+        } else {
+            $this->redirect('/');
+        }
     }
 }

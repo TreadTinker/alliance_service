@@ -42,55 +42,102 @@ $path = preg_replace('#^/public#', '', $path);
 // Для отладки
 error_log("Request: $method $path");
 
-// Маршрутизация
-switch ($path) {
-    case '':
-    case '/':
-        $controller = new PublicController();
-        $controller->index();
-        break;
+// // Маршрутизация
+// switch ($path) {
+//     case '':
+//     case '/':
+//         $controller = new PublicController();
+//         $controller->index();
+//         break;
         
-    case '/login':
-        if ($method === 'GET') {
-            $controller = new AuthController();
-            $controller->login();
-        } elseif ($method === 'POST') {
-            $controller = new AuthController();
-            $controller->login();
+//     case '/login':
+//         if ($method === 'GET') {
+//             $controller = new AuthController();
+//             $controller->login();
+//         } elseif ($method === 'POST') {
+//             $controller = new AuthController();
+//             $controller->login();
+//         }
+//         break;
+        
+//     case '/register':
+//         if ($method === 'GET') {
+//             $controller = new AuthController();
+//             $controller->register();
+//         } elseif ($method === 'POST') {
+//             $controller = new AuthController();
+//             $controller->register();
+//         }
+//         break;
+        
+//     case '/logout':
+//         $controller = new AuthController();
+//         $controller->logout();
+//         break;
+        
+//     case '/admin':
+//         $controller = new AdminController();
+//         $controller->dashboard();
+//         break;
+//     case '/admin/candidates':
+//         $controller = new AdminCandidatesController();
+//         $controller->index();
+//         break;
+
+//     case '/admin/candidates/(.+)':
+//         $courierId = $matches[1];
+//         $controller = new AdminCandidatesController();
+//         $controller->show($courierId);
+//         break;
+//     // Заглушки для других админ-страниц
+//     case '/admin/users':
+//     case '/admin/files':
+//     case '/admin/tracking':
+//     case '/admin/settings':
+//         $controller = new AdminController();
+//         $controller->dashboard(); // Показываем ту же панель
+//         break;
+        
+//     default:
+//         http_response_code(404);
+//         echo "Страница не найдена: " . htmlspecialchars($path);
+//         break;
+// }
+$routes = [
+    '#^/$#' => ['PublicController', 'index'],
+    '#^/login$#' => ['AuthController', 'login'],
+    '#^/register$#' => ['AuthController', 'register'],
+    '#^/logout$#' => ['AuthController', 'logout'],
+    '#^/admin$#' => ['AdminController', 'dashboard'],
+    '#^/admin/candidates$#' => ['AdminCandidatesController', 'index'],
+    '#^/admin/candidates/([^/]+)$#' => ['AdminCandidatesController', 'show'],
+    '#^/admin/(users|files|tracking|settings)$#' => ['AdminController', 'dashboard'],
+];
+
+$matched = false;
+
+foreach ($routes as $pattern => $handler) {
+    if (preg_match($pattern, $path, $matches)) {
+        $matched = true;
+        
+        list($controllerClass, $action) = $handler;
+        
+        // Создаем контроллер
+        $controller = new $controllerClass();
+        
+        // Если есть дополнительные параметры (например, courier_id)
+        if (count($matches) > 1) {
+            array_shift($matches); // убираем полное совпадение
+            call_user_func_array([$controller, $action], $matches);
+        } else {
+            $controller->$action();
         }
-        break;
         
-    case '/register':
-        if ($method === 'GET') {
-            $controller = new AuthController();
-            $controller->register();
-        } elseif ($method === 'POST') {
-            $controller = new AuthController();
-            $controller->register();
-        }
         break;
-        
-    case '/logout':
-        $controller = new AuthController();
-        $controller->logout();
-        break;
-        
-    case '/admin':
-        $controller = new AdminController();
-        $controller->dashboard();
-        break;
-        
-    // Заглушки для других админ-страниц
-    case '/admin/users':
-    case '/admin/files':
-    case '/admin/tracking':
-    case '/admin/settings':
-        $controller = new AdminController();
-        $controller->dashboard(); // Показываем ту же панель
-        break;
-        
-    default:
-        http_response_code(404);
-        echo "Страница не найдена: " . htmlspecialchars($path);
-        break;
+    }
+}
+
+if (!$matched) {
+    http_response_code(404);
+    echo "Страница не найдена: " . htmlspecialchars($path);
 }

@@ -11,9 +11,9 @@ class DB
     private array $config = [
         'host' => 'localhost',
         'dbname' => 'ccadmy1h_al_demo',
-        'username' => 'ccadmy1h_al_demo',
-        'password' => 'TvqoW83gq*sx',
-        'charset' => 'utf8mb4',
+        'username' => 'root',
+        'password' => '',
+        'charset' => 'utf8',
         'options' => [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -34,6 +34,7 @@ class DB
             $this->connection = new PDO($dsn, $this->config['username'], $this->config['password']);
             $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $e) {
+            print_r($e->getMessage());
             error_log("Database connection failed: " . $e->getMessage());
             die("Ошибка подключения к базе данных");
         }

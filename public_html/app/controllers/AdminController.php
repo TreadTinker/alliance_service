@@ -56,7 +56,7 @@ class AdminController
                 <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 25px; border-radius: 10px;">
                     <h3 style="margin-bottom: 10px; font-size: 14px; opacity: 0.9;">Пользователи</h3>
                     <div style="font-size: 32px; font-weight: bold;"><?= $stats['total_users'] ?></div>
-                    <div style="font-size: 12px; opacity: 0.8;">Всего зарегистрировано 12</div>
+                    <div style="font-size: 12px; opacity: 0.8;">Всего зарегистрировано</div>
                 </div>
 
                 <div style="background: linear-gradient(135deg, #f093fb, #f5576c); color: white; padding: 25px; border-radius: 10px;">
@@ -96,6 +96,21 @@ class AdminController
                        onmouseout="this.style.background='#f8f9fa'; this.style.color='#333'; this.style.borderColor='#e9ecef'">
                         <div style="font-size: 24px; margin-bottom: 10px;">👥</div>
                         <div style="font-weight: 500;">Управление пользователями</div>
+                    </a>
+
+                    <a href="/admin/candidates" style="
+                        display: block;
+                        background: #f8f9fa;
+                        padding: 20px;
+                        border-radius: 8px;
+                        text-decoration: none;
+                        color: #333;
+                        text-align: center;
+                        border: 2px solid #e9ecef;
+                        transition: all 0.3s;
+                    " class="action-btn">
+                        <div class="action-icon" style="font-size: 24px; margin-bottom: 10px;">👥</div>
+                        <div class="action-label" style="font-weight: 500;">Кандидаты</div>
                     </a>
 
                     <a href="/admin/files" style="
