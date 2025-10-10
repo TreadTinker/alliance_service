@@ -1,0 +1,12 @@
+RewriteEngine On
+
+# Перенаправляем все запросы в папку public
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteRule ^(.*)$ public/$1 [L]
+
+# В папке public - стандартные правила
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+RewriteRule ^(.*)$ index.php [QSA,L]
