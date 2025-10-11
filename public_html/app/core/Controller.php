@@ -9,7 +9,7 @@ abstract class Controller
     {
         // Извлекаем переменные для использования в view
         extract($data);
-
+        
         // Подключаем шапку
         require_once __DIR__ . '/../views/layout/header.php';
 

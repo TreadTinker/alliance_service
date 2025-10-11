@@ -50,10 +50,15 @@ class VerificationData extends Model
     public function addVerification($data)
     {
         $required = [
-            'courier_id', 'worked_hours', 'orders_count', 'total_amount', 
-            'record_date', 'period_from', 'period_to'
+            'courier_id',
+            'worked_hours',
+            'orders_count',
+            'total_amount',
+            'record_date',
+            'period_from',
+            'period_to'
         ];
-        
+
         foreach ($required as $field) {
             if (empty($data[$field])) {
                 throw new Exception("Обязательное поле {$field} не заполнено");
@@ -115,5 +120,85 @@ class VerificationData extends Model
             LIMIT ?";
 
         return $this->db->query($sql, [$periodFrom, $periodTo, $limit])->fetchAll();
+    }
+
+    /**
+     * Получить общее количество записей сверок
+     */
+    public function getTotalCount()
+    {
+        return $this->count();
+    }
+
+    /**
+     * Получить общую сумму заработка всех курьеров
+     */
+    public function getTotalEarnings()
+    {
+        $sql = "SELECT SUM(total_amount) as total FROM {$this->table}";
+        $result = $this->db->query($sql)->fetch();
+        return $result['total'] ?? 0;
+    }
+
+    /**
+     * Получить последние записи сверок с именами курьеров
+     */
+    public function getRecentVerificationsWithNames($limit = 10)
+    {
+        try {
+            log_debug('Getting recent verifications with names', ['limit' => $limit]);
+
+            $sql = "SELECT 
+                v.*, 
+                c.full_name
+            FROM {$this->table} v
+            LEFT JOIN candidates c ON v.courier_id = c.courier_id
+            ORDER BY v.created_at DESC 
+            LIMIT ?";
+
+            log_debug('SQL query prepared', ['sql' => $sql]);
+
+            $result = $this->db->query($sql, [$limit])->fetchAll();
+
+            log_debug('Recent verifications query result', [
+                'result_count' => count($result),
+                'result_sample' => $result ? array_slice($result, 0, 2) : 'empty'
+            ]);
+
+            return $result;
+        } catch (Exception $e) {
+            log_error('Error in getRecentVerificationsWithNames', [
+                'message' => $e->getMessage(),
+                'limit' => $limit
+            ]);
+            return [];
+        }
+    }
+
+    /**
+     * Получить статистику за все время
+     */
+    public function getOverallStats()
+    {
+        $sql = "SELECT 
+                COUNT(*) as total_verifications,
+                SUM(worked_hours) as total_hours,
+                SUM(orders_count) as total_orders,
+                SUM(total_amount) as total_earnings,
+                COUNT(DISTINCT courier_id) as unique_couriers
+            FROM {$this->table}";
+
+        return $this->db->query($sql)->fetch();
+    }
+
+    /**
+     * Получить количество записей за последние N дней
+     */
+    public function getRecentCount($days = 7)
+    {
+        $sql = "SELECT COUNT(*) as count FROM {$this->table} 
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)";
+        $result = $this->db->query($sql, [$days])->fetch();
+        return $result['count'] ?? 0;
     }
 }

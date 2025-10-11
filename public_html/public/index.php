@@ -36,81 +36,99 @@ $method = $_SERVER['REQUEST_METHOD'];
 // Убираем параметры запроса
 $path = parse_url($requestUri, PHP_URL_PATH);
 
-// Убираем /public из пути, если есть
+/// Убираем /public из пути, если есть
 $path = preg_replace('#^/public#', '', $path);
 
 // Для отладки
 error_log("Request: $method $path");
 
-// // Маршрутизация
-// switch ($path) {
-//     case '':
-//     case '/':
-//         $controller = new PublicController();
-//         $controller->index();
-//         break;
+if (preg_match('#^/app/views/admin/assets/#', $path)) {
+    $filePath = ROOT_DIR . $path;
+    
+    if (file_exists($filePath) && is_file($filePath)) {
+        $mimeTypes = [
+            'css' => 'text/css',
+            'js' => 'application/javascript',
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'ico' => 'image/x-icon',
+            'svg' => 'image/svg+xml',
+            'woff' => 'font/woff',
+            'woff2' => 'font/woff2',
+            'ttf' => 'font/ttf',
+            'eot' => 'application/vnd.ms-fontobject'
+        ];
         
-//     case '/login':
-//         if ($method === 'GET') {
-//             $controller = new AuthController();
-//             $controller->login();
-//         } elseif ($method === 'POST') {
-//             $controller = new AuthController();
-//             $controller->login();
-//         }
-//         break;
+        $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+        $mimeType = $mimeTypes[$extension] ?? 'text/plain';
         
-//     case '/register':
-//         if ($method === 'GET') {
-//             $controller = new AuthController();
-//             $controller->register();
-//         } elseif ($method === 'POST') {
-//             $controller = new AuthController();
-//             $controller->register();
-//         }
-//         break;
-        
-//     case '/logout':
-//         $controller = new AuthController();
-//         $controller->logout();
-//         break;
-        
-//     case '/admin':
-//         $controller = new AdminController();
-//         $controller->dashboard();
-//         break;
-//     case '/admin/candidates':
-//         $controller = new AdminCandidatesController();
-//         $controller->index();
-//         break;
+        header('Content-Type: ' . $mimeType);
+        readfile($filePath);
+        exit;
+    } else {
+        http_response_code(404);
+        echo "Admin asset not found: " . htmlspecialchars($filePath);
+        exit;
+    }
+}
 
-//     case '/admin/candidates/(.+)':
-//         $courierId = $matches[1];
-//         $controller = new AdminCandidatesController();
-//         $controller->show($courierId);
-//         break;
-//     // Заглушки для других админ-страниц
-//     case '/admin/users':
-//     case '/admin/files':
-//     case '/admin/tracking':
-//     case '/admin/settings':
-//         $controller = new AdminController();
-//         $controller->dashboard(); // Показываем ту же панель
-//         break;
+if (preg_match('#^/assets/#', $path)) {
+    $filePath = ROOT_DIR . $path; // Добавляем /public к пути
+    
+    if (file_exists($filePath) && is_file($filePath)) {
+        $mimeTypes = [
+            'css' => 'text/css',
+            'js' => 'application/javascript',
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'ico' => 'image/x-icon',
+            'svg' => 'image/svg+xml',
+            'woff' => 'font/woff',
+            'woff2' => 'font/woff2',
+            'ttf' => 'font/ttf',
+            'eot' => 'application/vnd.ms-fontobject'
+        ];
         
-//     default:
-//         http_response_code(404);
-//         echo "Страница не найдена: " . htmlspecialchars($path);
-//         break;
-// }
+        $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+        $mimeType = $mimeTypes[$extension] ?? 'text/plain';
+        
+        header('Content-Type: ' . $mimeType);
+        readfile($filePath);
+        exit;
+    } else {
+        http_response_code(404);
+        echo "File not found: " . htmlspecialchars($filePath);
+        exit;
+    }
+}
+
+// // Маршрутизация
 $routes = [
+    // Главная страница
     '#^/$#' => ['PublicController', 'index'],
+    
+    // Аутентификация
     '#^/login$#' => ['AuthController', 'login'],
     '#^/register$#' => ['AuthController', 'register'],
     '#^/logout$#' => ['AuthController', 'logout'],
+    
+    // Админка - dashboard
     '#^/admin$#' => ['AdminController', 'dashboard'],
-    '#^/admin/candidates$#' => ['AdminCandidatesController', 'index'],
+    '#^/admin/dashboard$#' => ['AdminController', 'dashboard'],
+    
+    // Админка - кандидаты (специфичные маршруты сначала)
+    '#^/admin/candidates/([^/]+)/verifications$#' => ['AdminCandidatesController', 'verifications'],
+    '#^/admin/candidates/([^/]+)/edit$#' => ['AdminCandidatesController', 'edit'],
     '#^/admin/candidates/([^/]+)$#' => ['AdminCandidatesController', 'show'],
+    '#^/admin/candidates/add$#' => ['AdminCandidatesController', 'add'],
+    '#^/admin/candidates/export$#' => ['AdminCandidatesController', 'export'],
+    '#^/admin/candidates$#' => ['AdminCandidatesController', 'index'],
+    
+    // Общие админ-маршруты
     '#^/admin/(users|files|tracking|settings)$#' => ['AdminController', 'dashboard'],
 ];
 

@@ -38,19 +38,6 @@
             font-size: 16px;
             margin: 10px;
         ">Войти в систему</a>
-        
-        <a href="/register" style="
-            display: inline-block;
-            background: white;
-            color: #667eea;
-            padding: 15px 30px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 16px;
-            margin: 10px;
-            border: 2px solid #667eea;
-        ">Зарегистрироваться</a>
     </div>
     
     <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 60px;">

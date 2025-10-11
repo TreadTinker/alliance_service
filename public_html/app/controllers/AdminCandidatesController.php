@@ -188,4 +188,139 @@ class AdminCandidatesController extends Controller
             'last_verification' => 'Нет данных'
         ];
     }
+
+    /**
+     * Экспорт данных кандидатов
+     */
+    public function export()
+    {
+        // Проверка прав доступа
+        if (!$this->auth->isLoggedIn() || (!$this->auth->isAdmin() && !$this->auth->isModerator())) {
+            $this->redirect('/?error=access_denied');
+        }
+
+        // Логика экспорта
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="candidates_' . date('Y-m-d') . '.csv"');
+
+        $output = fopen('php://output', 'w');
+
+        // Добавляем BOM для корректного отображения кириллицы в Excel
+        fwrite($output, "\xEF\xBB\xBF");
+
+        fputcsv($output, ['ID Курьера', 'ФИО', 'Город', 'Телефон', 'Менеджер', 'Отдел', 'Статус'], ';');
+
+        $candidates = $this->candidateModel->where([]);
+        foreach ($candidates as $candidate) {
+            fputcsv($output, [
+                $candidate['courier_id'],
+                $candidate['full_name'],
+                $candidate['city'],
+                $candidate['phone_number'],
+                $candidate['manager_name'],
+                $candidate['department'],
+                $candidate['status']
+            ], ';');
+        }
+
+        fclose($output);
+        exit;
+    }
+
+    /**
+     * Добавление нового курьера
+     */
+    public function add()
+    {
+        // Проверка прав доступа
+        if (!$this->auth->isLoggedIn() || (!$this->auth->isAdmin() && !$this->auth->isModerator())) {
+            $this->redirect('/?error=access_denied');
+        }
+
+        $errors = [];
+        $success = '';
+
+        if ($_POST) {
+            try {
+                $this->candidateModel->createCandidate($_POST);
+                $this->redirect('/admin/candidates?success=candidate_added');
+            } catch (Exception $e) {
+                $errors[] = $e->getMessage();
+            }
+        }
+
+        // Получаем уникальные значения для формы
+        $departments = $this->candidateModel->getUniqueDepartments();
+        $cities = $this->candidateModel->getUniqueCities();
+
+        $this->render('admin/candidates/add', [
+            'departments' => $departments,
+            'cities' => $cities,
+            'errors' => $errors,
+            'success' => $success
+        ]);
+    }
+
+    /**
+     * Редактирование курьера
+     */
+    public function edit($courierId)
+    {
+        // Проверка прав доступа
+        if (!$this->auth->isLoggedIn() || (!$this->auth->isAdmin() && !$this->auth->isModerator())) {
+            $this->redirect('/?error=access_denied');
+        }
+
+        $candidate = $this->candidateModel->findByCourierId($courierId);
+
+        if (!$candidate) {
+            $this->redirect('/admin/candidates?error=candidate_not_found');
+        }
+
+        $errors = [];
+
+        if ($_POST) {
+            try {
+                $this->candidateModel->updateCandidate($courierId, $_POST);
+                $this->redirect('/admin/candidates?success=candidate_updated');
+            } catch (Exception $e) {
+                $errors[] = $e->getMessage();
+            }
+        }
+
+        // Получаем уникальные значения для формы
+        $departments = $this->candidateModel->getUniqueDepartments();
+        $cities = $this->candidateModel->getUniqueCities();
+
+        $this->render('admin/candidates/edit', [
+            'candidate' => $candidate,
+            'departments' => $departments,
+            'cities' => $cities,
+            'errors' => $errors
+        ]);
+    }
+
+    /**
+     * Данные сверок кандидата
+     */
+    public function verifications($courierId)
+    {
+        // Проверка прав доступа
+        if (!$this->auth->isLoggedIn() || (!$this->auth->isAdmin() && !$this->auth->isModerator())) {
+            $this->redirect('/?error=access_denied');
+        }
+
+        $candidate = $this->candidateModel->findByCourierId($courierId);
+
+        if (!$candidate) {
+            $this->redirect('/admin/candidates?error=candidate_not_found');
+        }
+
+        $verifications = $this->verificationModel->getByCourier($courierId);
+
+        $this->render('admin/candidates/verifications', [
+            'candidate' => $candidate,
+            'verifications' => $verifications
+        ]);
+    }
 }

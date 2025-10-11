@@ -506,7 +506,6 @@
                         <th>Менеджер</th>
                         <th>Отдел</th>
                         <th>Статистика</th>
-                        <th>Статус</th>
                         <th>Действия</th>
                     </tr>
                 </thead>
@@ -551,23 +550,6 @@
                                             <span class="stat-value"><?= number_format($candidate['stats']['total_earnings'], 0, '', ' ') ?> ₽</span>
                                         </div>
                                     </div>
-                                </td>
-                                <td>
-                                    <?php
-                                    $statusColors = [
-                                        'active' => 'success',
-                                        'inactive' => 'warning',
-                                        'fired' => 'danger'
-                                    ];
-                                    $statusLabels = [
-                                        'active' => 'Активен',
-                                        'inactive' => 'Неактивен',
-                                        'fired' => 'Уволен'
-                                    ];
-                                    ?>
-                                    <span class="badge badge-<?= $statusColors[$candidate['status']] ?>">
-                                        <?= $statusLabels[$candidate['status']] ?>
-                                    </span>
                                 </td>
                                 <td>
                                     <div class="action-buttons">
