@@ -44,9 +44,22 @@ class AdminController
         $stats = $this->getStats();
 
         // Передаем данные в view
-        require_once __DIR__ . '/../views/admin/dashboard/index.php';
+        require_once __DIR__ . '/../views/admin/pages/dashboard/index.php';
     }
 
+
+    public function tables() 
+    {
+        log_info("Admin pages Tables");
+
+        if (!$this->auth->isLoggedIn() || (!$this->auth->isAdmin() && !$this->auth->isModerator())) {
+            log_warning('Unauthorized access attempt to admin dashboard');
+            header('Location: /login?redirect=admin');
+            exit;
+        }
+
+        require_once __DIR__ . '/../views/admin/pages/tables/index.php';
+    }
     /**
      * Получить реальную статистику через модели
      */
