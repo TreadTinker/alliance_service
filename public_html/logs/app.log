@@ -1704,3 +1704,5 @@
 [2025-10-16 15:07:38] [DEBUG] Recent verifications result {"count":0,"data":[]}
 [2025-10-16 15:07:38] [INFO] Admin statistics retrieved successfully {"stats_summary":{"candidates":"5","verifications":5,"earnings":"202200.00"}}
 [2025-10-16 15:07:39] [INFO] Admin candidates page accessed 
+[2025-10-16 15:12:55] [INFO] Admin candidates page accessed 
+[2025-10-16 15:13:14] [INFO] Admin candidates page accessed 
