@@ -1,8 +1,5 @@
 <?php
 
-// Подключаем логгер
-require_once __DIR__ . '/../core/Logger.php';
-
 class AdminCandidatesController extends Controller
 {
     private $candidateModel;
@@ -26,9 +23,6 @@ class AdminCandidatesController extends Controller
      */
     public function index()
     {
-        log_info("Admin candidates page accessed");
-
-        // Получаем параметры фильтрации
         $search = $_GET['search'] ?? '';
         $department = $_GET['department'] ?? '';
         $city = $_GET['city'] ?? '';
@@ -41,7 +35,6 @@ class AdminCandidatesController extends Controller
         $departments = $this->candidateModel->getUniqueDepartments();
         $cities = $this->candidateModel->getUniqueCities();
 
-<<<<<<< Updated upstream
         $this->render('admin/candidates/index', [
             'candidates' => $candidates,
             'search' => $search,
@@ -51,10 +44,6 @@ class AdminCandidatesController extends Controller
             'departments' => $departments,
             'cities' => $cities
         ]);
-=======
-        // Начинаем буферизацию вывода
-        include __DIR__ . '/../views/admin/pages/candidates/index.php';
->>>>>>> Stashed changes
     }
 
     /**
@@ -62,7 +51,6 @@ class AdminCandidatesController extends Controller
      */
     public function show($courierId)
     {
-        print_r($courierId);
         $candidate = $this->candidateModel->findByCourierId($courierId);
 
         if (!$candidate) {
@@ -75,29 +63,11 @@ class AdminCandidatesController extends Controller
         // Статистика за ВСЕ время (агрегируем из всех записей)
         $stats = $this->getCandidateTotalStats($verifications);
 
-<<<<<<< Updated upstream
         $this->render('admin/candidates/show', [
             'candidate' => $candidate,
             'verifications' => $verifications,
             'stats' => $stats
         ]);
-=======
-        // Если это запрос для попапа - возвращаем упрощенную версию
-        if (isset($_GET['popup']) && $_GET['popup'] == true) {
-            include __DIR__ . '/../views/admin/pages/candidates/show_popup.php';
-            exit;
-        }
-
-        // Иначе показываем полную страницу
-        $pageTitle = "Кандидат: " . $candidate['full_name'];
-        $currentSection = "candidates";
-
-        ob_start();
-        include __DIR__ . '/../views/admin/pages/candidates/show.php';
-        $content = ob_get_clean();
-
-        include __DIR__ . '/../views/admin/layout/admin.php';
->>>>>>> Stashed changes
     }
 
     /**
