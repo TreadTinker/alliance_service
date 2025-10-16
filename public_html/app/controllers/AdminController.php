@@ -47,28 +47,6 @@ class AdminController
         require_once __DIR__ . '/../views/admin/dashboard/index.php';
     }
 
-<<<<<<< Updated upstream
-=======
-    
-    /**
-     * tables
-     *
-     * @return void
-     */
-    public function tables() 
-    {
-        log_info("Admin pages Tables");
-
-        if (!$this->auth->isLoggedIn() || (!$this->auth->isAdmin() && !$this->auth->isModerator())) {
-            log_warning('Unauthorized access attempt to admin dashboard');
-            header('Location: /login?redirect=admin');
-            exit;
-        }
-
-        require_once __DIR__ . '/../views/admin/pages/tables/index.php';
-    }
-
->>>>>>> Stashed changes
     /**
      * Получить реальную статистику через модели
      */
