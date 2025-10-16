@@ -110,6 +110,7 @@ if (preg_match('#^/assets/#', $path)) {
 $routes = [
     // Главная страница
     '#^/$#' => ['PublicController', 'index'],
+    '#^/tarif$#' => ['PublicController', 'tarif'],
     
     // Аутентификация
     '#^/login$#' => ['AuthController', 'login'],
@@ -119,6 +120,7 @@ $routes = [
     // Админка - dashboard
     '#^/admin$#' => ['AdminController', 'dashboard'],
     '#^/admin/dashboard$#' => ['AdminController', 'dashboard'],
+    '#^/admin/tables$#' => ['AdminController', 'tables'],
     
     // Админка - кандидаты (специфичные маршруты сначала)
     '#^/admin/candidates/([^/]+)/verifications$#' => ['AdminCandidatesController', 'verifications'],
@@ -130,6 +132,7 @@ $routes = [
     
     // Общие админ-маршруты
     '#^/admin/(users|files|tracking|settings)$#' => ['AdminController', 'dashboard'],
+
 ];
 
 $matched = false;

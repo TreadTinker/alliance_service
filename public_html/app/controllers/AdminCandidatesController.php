@@ -1,5 +1,8 @@
 <?php
 
+// Подключаем логгер
+require_once __DIR__ . '/../core/Logger.php';
+
 class AdminCandidatesController extends Controller
 {
     private $candidateModel;
@@ -23,6 +26,10 @@ class AdminCandidatesController extends Controller
      */
     public function index()
     {
+
+        log_info("Admin candidates page accessed");
+
+        // Получаем параметры фильтрации
         $search = $_GET['search'] ?? '';
         $department = $_GET['department'] ?? '';
         $city = $_GET['city'] ?? '';
@@ -35,15 +42,12 @@ class AdminCandidatesController extends Controller
         $departments = $this->candidateModel->getUniqueDepartments();
         $cities = $this->candidateModel->getUniqueCities();
 
-        $this->render('admin/candidates/index', [
-            'candidates' => $candidates,
-            'search' => $search,
-            'department' => $department,
-            'city' => $city,
-            'status' => $status,
-            'departments' => $departments,
-            'cities' => $cities
-        ]);
+        // Устанавливаем переменные для layout
+        $pageTitle = "Таблица кандидатов";
+        $currentSection = "candidates";
+
+        // Начинаем буферизацию вывода
+        include __DIR__ . '/../views/admin/pages/candidates/index.php';
     }
 
     /**
@@ -51,6 +55,7 @@ class AdminCandidatesController extends Controller
      */
     public function show($courierId)
     {
+        print_r($courierId);
         $candidate = $this->candidateModel->findByCourierId($courierId);
 
         if (!$candidate) {
@@ -62,12 +67,22 @@ class AdminCandidatesController extends Controller
 
         // Статистика за ВСЕ время (агрегируем из всех записей)
         $stats = $this->getCandidateTotalStats($verifications);
+        
+        // Если это запрос для попапа - возвращаем упрощенную версию
+        if (isset($_GET['popup']) && $_GET['popup'] == true) {
+            include __DIR__ . '/../views/admin/pages/candidates/show_popup.php';
+            exit;
+        }
 
-        $this->render('admin/candidates/show', [
-            'candidate' => $candidate,
-            'verifications' => $verifications,
-            'stats' => $stats
-        ]);
+        // Иначе показываем полную страницу
+        $pageTitle = "Кандидат: " . $candidate['full_name'];
+        $currentSection = "candidates";
+
+        ob_start();
+        include __DIR__ . '/../views/admin/pages/candidates/show.php';
+        $content = ob_get_clean();
+
+        include __DIR__ . '/../views/admin/layout/admin.php';
     }
 
     /**
@@ -105,7 +120,6 @@ class AdminCandidatesController extends Controller
      */
     private function getCandidatesWithStats($search = '', $department = '', $city = '', $status = 'active')
     {
-        // Используем метод where из модели Candidate
         $where = ['status' => $status];
 
         if (!empty($department)) {
@@ -140,14 +154,12 @@ class AdminCandidatesController extends Controller
     private function getCandidateStats($courierId)
     {
         try {
-            // Получаем все записи сверок для курьера через модель
             $verifications = $this->verificationModel->getByCourier($courierId);
 
             if (empty($verifications)) {
                 return $this->getEmptyStats();
             }
 
-            // Считаем статистику вручную из всех записей
             $stats = [
                 'total_verifications' => count($verifications),
                 'total_hours' => 0,
@@ -161,7 +173,6 @@ class AdminCandidatesController extends Controller
                 $stats['total_orders'] += $verification['orders_count'];
                 $stats['total_earnings'] += $verification['total_amount'];
 
-                // Находим самую свежую дату
                 $currentDate = $verification['record_date'];
                 if (empty($stats['last_verification']) || $currentDate > $stats['last_verification']) {
                     $stats['last_verification'] = $currentDate;
@@ -194,18 +205,14 @@ class AdminCandidatesController extends Controller
      */
     public function export()
     {
-        // Проверка прав доступа
         if (!$this->auth->isLoggedIn() || (!$this->auth->isAdmin() && !$this->auth->isModerator())) {
             $this->redirect('/?error=access_denied');
         }
 
-        // Логика экспорта
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename="candidates_' . date('Y-m-d') . '.csv"');
 
         $output = fopen('php://output', 'w');
-
-        // Добавляем BOM для корректного отображения кириллицы в Excel
         fwrite($output, "\xEF\xBB\xBF");
 
         fputcsv($output, ['ID Курьера', 'ФИО', 'Город', 'Телефон', 'Менеджер', 'Отдел', 'Статус'], ';');
@@ -232,13 +239,11 @@ class AdminCandidatesController extends Controller
      */
     public function add()
     {
-        // Проверка прав доступа
         if (!$this->auth->isLoggedIn() || (!$this->auth->isAdmin() && !$this->auth->isModerator())) {
             $this->redirect('/?error=access_denied');
         }
 
         $errors = [];
-        $success = '';
 
         if ($_POST) {
             try {
@@ -249,16 +254,17 @@ class AdminCandidatesController extends Controller
             }
         }
 
-        // Получаем уникальные значения для формы
         $departments = $this->candidateModel->getUniqueDepartments();
         $cities = $this->candidateModel->getUniqueCities();
 
-        $this->render('admin/candidates/add', [
-            'departments' => $departments,
-            'cities' => $cities,
-            'errors' => $errors,
-            'success' => $success
-        ]);
+        $pageTitle = "Добавление кандидата";
+        $currentSection = "candidates";
+
+        ob_start();
+        include __DIR__ . '/../../views/admin/pages/candidates/add.php';
+        $content = ob_get_clean();
+
+        include __DIR__ . '/../views/admin/layout/admin.php';
     }
 
     /**
@@ -266,7 +272,6 @@ class AdminCandidatesController extends Controller
      */
     public function edit($courierId)
     {
-        // Проверка прав доступа
         if (!$this->auth->isLoggedIn() || (!$this->auth->isAdmin() && !$this->auth->isModerator())) {
             $this->redirect('/?error=access_denied');
         }
@@ -288,16 +293,17 @@ class AdminCandidatesController extends Controller
             }
         }
 
-        // Получаем уникальные значения для формы
         $departments = $this->candidateModel->getUniqueDepartments();
         $cities = $this->candidateModel->getUniqueCities();
 
-        $this->render('admin/candidates/edit', [
-            'candidate' => $candidate,
-            'departments' => $departments,
-            'cities' => $cities,
-            'errors' => $errors
-        ]);
+        $pageTitle = "Редактирование кандидата";
+        $currentSection = "candidates";
+
+        ob_start();
+        include __DIR__ . '/../../views/admin/pages/candidates/edit.php';
+        $content = ob_get_clean();
+
+        include __DIR__ . '/../views/admin/layout/admin.php';
     }
 
     /**
@@ -305,7 +311,6 @@ class AdminCandidatesController extends Controller
      */
     public function verifications($courierId)
     {
-        // Проверка прав доступа
         if (!$this->auth->isLoggedIn() || (!$this->auth->isAdmin() && !$this->auth->isModerator())) {
             $this->redirect('/?error=access_denied');
         }
@@ -318,9 +323,13 @@ class AdminCandidatesController extends Controller
 
         $verifications = $this->verificationModel->getByCourier($courierId);
 
-        $this->render('admin/candidates/verifications', [
-            'candidate' => $candidate,
-            'verifications' => $verifications
-        ]);
+        $pageTitle = "Сверки кандидата: " . $candidate['full_name'];
+        $currentSection = "candidates";
+
+        ob_start();
+        include __DIR__ . '/../../views/admin/candidates/verifications.php';
+        $content = ob_get_clean();
+
+        include __DIR__ . '/../views/admin/layout/admin.php';
     }
 }
