@@ -44,7 +44,9 @@ function isActiveSection($section) {
         <?php include __DIR__ . '/footer.php'; ?>
     </main>
 
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="/app/views/admin/assets/js/core/bootstrap.min.js"></script>
+    <script src="/app/views/admin/assets/js/core/popper.min.js"></script>
     <script src="/app/views/admin/assets/js/plugins/perfect-scrollbar.min.js"></script>
     <script src="/app/views/admin/assets/js/plugins/smooth-scrollbar.min.js"></script>
     <script src="/app/views/admin/assets/js/admin.js"></script>

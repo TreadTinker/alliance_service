@@ -1,5 +1,8 @@
 <?php
 
+// Подключаем логгер
+require_once __DIR__ . '/../core/Logger.php';
+
 class AdminCandidatesController extends Controller
 {
     private $candidateModel;
@@ -23,6 +26,10 @@ class AdminCandidatesController extends Controller
      */
     public function index()
     {
+
+        log_info("Admin candidates page accessed");
+
+        // Получаем параметры фильтрации
         $search = $_GET['search'] ?? '';
         $department = $_GET['department'] ?? '';
         $city = $_GET['city'] ?? '';
@@ -40,12 +47,7 @@ class AdminCandidatesController extends Controller
         $currentSection = "candidates";
 
         // Начинаем буферизацию вывода
-        ob_start();
         include __DIR__ . '/../views/admin/pages/candidates/index.php';
-        $content = ob_get_clean();
-
-        // Подключаем основной layout
-        include __DIR__ . '/../views/admin/layout/admin.php';
     }
 
     /**
@@ -53,6 +55,7 @@ class AdminCandidatesController extends Controller
      */
     public function show($courierId)
     {
+        print_r($courierId);
         $candidate = $this->candidateModel->findByCourierId($courierId);
 
         if (!$candidate) {
@@ -60,17 +63,23 @@ class AdminCandidatesController extends Controller
         }
 
         // Получаем ВСЕ записи сверок для хронологии через модель
-        $verifications = $this->verificationModel->getByCourier($courierId, 0);
+        $verifications = $this->verificationModel->getByCourier($courierId, 0); // 0 = все записи
 
-        // Статистика за ВСЕ время
+        // Статистика за ВСЕ время (агрегируем из всех записей)
         $stats = $this->getCandidateTotalStats($verifications);
+        
+        // Если это запрос для попапа - возвращаем упрощенную версию
+        if (isset($_GET['popup']) && $_GET['popup'] == true) {
+            include __DIR__ . '/../views/admin/pages/candidates/show_popup.php';
+            exit;
+        }
 
-        // Устанавливаем переменные для layout
+        // Иначе показываем полную страницу
         $pageTitle = "Кандидат: " . $candidate['full_name'];
         $currentSection = "candidates";
 
         ob_start();
-        include __DIR__ . '/../../views/admin/pages/candidates/show.php';
+        include __DIR__ . '/../views/admin/pages/candidates/show.php';
         $content = ob_get_clean();
 
         include __DIR__ . '/../views/admin/layout/admin.php';

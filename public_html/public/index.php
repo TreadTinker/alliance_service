@@ -110,6 +110,7 @@ if (preg_match('#^/assets/#', $path)) {
 $routes = [
     // Главная страница
     '#^/$#' => ['PublicController', 'index'],
+    '#^/tarif$#' => ['PublicController', 'tarif'],
     
     // Аутентификация
     '#^/login$#' => ['AuthController', 'login'],
