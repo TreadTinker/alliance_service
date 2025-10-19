@@ -59,10 +59,30 @@ class DB
     {
         try {
             $stmt = $this->connection->prepare($sql);
-            $stmt->execute($params);
+             foreach ($params as $key => $value) {
+                $paramType = PDO::PARAM_STR;
+                
+                if (is_int($value)) {
+                    $paramType = PDO::PARAM_INT;
+                } elseif (is_bool($value)) {
+                    $paramType = PDO::PARAM_BOOL;
+                } elseif (is_null($value)) {
+                    $paramType = PDO::PARAM_NULL;
+                }
+                
+                // Нумерация параметров начинается с 1
+                $stmt->bindValue($key + 1, $value, $paramType);
+            }
+            $stmt->execute();
             return $stmt;
         } catch (PDOException $e) {
-            error_log("Query error: " . $e->getMessage() . " [SQL: $sql]");
+            log_error("DB Query Error", [
+                'sql' => $sql,
+                'params' => $params,
+                'error_message' => $e->getMessage(),
+                'error_code' => $e->getCode()
+            ]);
+            
             throw new Exception("Ошибка выполнения запроса");
         }
     }

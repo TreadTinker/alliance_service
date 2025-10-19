@@ -1,5 +1,9 @@
 <?php
 // Переменные: $candidate, $departments, $cities, $errors
+
+if ($_POST) {
+    
+}
 ?>
 <style>
     /* Стили такие же как в add.php */

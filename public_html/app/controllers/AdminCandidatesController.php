@@ -55,7 +55,6 @@ class AdminCandidatesController extends Controller
      */
     public function show($courierId)
     {
-        print_r($courierId);
         $candidate = $this->candidateModel->findByCourierId($courierId);
 
         if (!$candidate) {
@@ -300,7 +299,7 @@ class AdminCandidatesController extends Controller
         $currentSection = "candidates";
 
         ob_start();
-        include __DIR__ . '/../../views/admin/pages/candidates/edit.php';
+        include __DIR__ . '/../views/admin/pages/candidates/edit.php';
         $content = ob_get_clean();
 
         include __DIR__ . '/../views/admin/layout/admin.php';

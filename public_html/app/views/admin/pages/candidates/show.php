@@ -7,16 +7,7 @@
 <div class="container-fluid py-4">
     <div class="row">
         <div class="col-12">
-            <!-- Хлебные крошки -->
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/admin/dashboard">Главная</a></li>
-                    <li class="breadcrumb-item"><a href="/admin/candidates">Кандидаты</a></li>
-                    <li class="breadcrumb-item active"><?= htmlspecialchars($candidate['full_name']) ?></li>
-                </ol>
-            </nav>
-
-            <!-- Заголовок страницы -->
+           <!-- Заголовок страницы -->
             <div class="card mb-4">
                 <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
                     <div class="bg-gradient-dark shadow-dark border-radius-lg pt-4 pb-3">
@@ -27,7 +18,7 @@
                                 </h4>
                                 <p class="text-white text-sm ps-3 mb-0">ID: <?= htmlspecialchars($candidate['courier_id']) ?></p>
                             </div>
-                            <div class="col-md-4 text-end">
+                            <div class="col-md-4 text-end pe-4">
                                 <a href="/admin/candidates/<?= $candidate['courier_id'] ?>/edit" class="btn btn-warning btn-sm">
                                     <i class="material-symbols-rounded">edit</i> Редактировать
                                 </a>

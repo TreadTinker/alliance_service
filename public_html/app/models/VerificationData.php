@@ -143,22 +143,21 @@ class VerificationData extends Model
     /**
      * Получить последние записи сверок с именами курьеров
      */
-    public function getRecentVerificationsWithNames($limit = 10)
+    public function getRecentVerificationsWithNames()
     {
         try {
-            log_debug('Getting recent verifications with names', ['limit' => $limit]);
+            log_debug('Getting recent verifications with names');
 
             $sql = "SELECT 
                 v.*, 
                 c.full_name
             FROM {$this->table} v
             LEFT JOIN candidates c ON v.courier_id = c.courier_id
-            ORDER BY v.created_at DESC 
-            LIMIT ?";
-
+            ORDER BY v.created_at DESC";
+            
             log_debug('SQL query prepared', ['sql' => $sql]);
 
-            $result = $this->db->query($sql, [$limit])->fetchAll();
+            $result = $this->db->query($sql)->fetchAll();
 
             log_debug('Recent verifications query result', [
                 'result_count' => count($result),
@@ -168,8 +167,7 @@ class VerificationData extends Model
             return $result;
         } catch (Exception $e) {
             log_error('Error in getRecentVerificationsWithNames', [
-                'message' => $e->getMessage(),
-                'limit' => $limit
+                'message' => $e->getMessage()
             ]);
             return [];
         }

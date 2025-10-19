@@ -58,6 +58,8 @@ class AdminController
             exit;
         }
 
+        $stats = $this->getStats();
+
         require_once __DIR__ . '/../views/admin/pages/tables/index.php';
     }
     /**
