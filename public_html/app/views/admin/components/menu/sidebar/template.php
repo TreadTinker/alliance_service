@@ -16,7 +16,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link <?= isActiveSection('tables') ?> " href="/admin/tables">
+                <a class="nav-link <?= isActiveSection('tables') ?> " href="/admin/reconciliation">
                     <i class="material-symbols-rounded opacity-5">table_view</i>
                     <span class="nav-link-text ms-1">Таблица сверок</span>
                 </a>

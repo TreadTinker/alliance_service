@@ -120,7 +120,14 @@ $routes = [
     // Админка - dashboard
     '#^/admin$#' => ['AdminController', 'dashboard'],
     '#^/admin/dashboard$#' => ['AdminController', 'dashboard'],
-    '#^/admin/tables$#' => ['AdminController', 'tables'],
+
+    //Сверки
+    '#^/admin/reconciliation$#' => ['AdminReconciliationController', 'index'],
+    '#^/admin/reconciliation/create$#' => ['AdminReconciliationController', 'create'],
+    '#^/admin/reconciliation/store$#' => ['AdminReconciliationController', 'store'],
+    '#^/admin/reconciliation/(\d+)$#' => ['AdminReconciliationController', 'show'],
+    '#^/admin/reconciliation/(\d+)/edit$#' => ['AdminReconciliationController', 'edit'],
+    
     
     // Админка - кандидаты (специфичные маршруты сначала)
     '#^/admin/candidates/([^/]+)/verifications$#' => ['AdminCandidatesController', 'verifications'],

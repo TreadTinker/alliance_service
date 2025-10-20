@@ -6,6 +6,49 @@ class VerificationData extends Model
     protected string $primaryKey = 'id';
 
     /**
+     * Создать запись (совместим с Model::create)
+     */
+    public function create(array $data): bool
+    {
+        return $this->addVerification($data);
+    }
+
+    /**
+     * Добавить данные сверки
+     */
+    public function addVerification($data)
+    {
+        $required = [
+            'courier_id',
+            'worked_hours',
+            'orders_count',
+            'total_amount',
+            'record_date',
+            'period_from',
+            'period_to'
+        ];
+
+        foreach ($required as $field) {
+            if (empty($data[$field])) {
+                throw new Exception("Обязательное поле {$field} не заполнено");
+            }
+        }
+
+        // Проверяем, нет ли уже данных за этот период
+        $existing = $this->getByCourierAndPeriod($data['courier_id'], $data['period_from'], $data['period_to']);
+        if ($existing) {
+            throw new Exception("Данные за указанный период уже существуют");
+        }
+
+        // Добавляем временную метку если её нет
+        if (!isset($data['created_at'])) {
+            $data['created_at'] = date('Y-m-d H:i:s');
+        }
+
+        return $this->db->insert($this->table, $data);
+    }
+
+    /**
      * Получить данные сверки по ID курьера и периоду
      */
     public function getByCourierAndPeriod($courierId, $periodFrom, $periodTo)
@@ -42,36 +85,6 @@ class VerificationData extends Model
     public function getLatestVerifications($limit = 10)
     {
         return $this->db->select($this->table, [], '*', 'record_date DESC, created_at DESC', $limit);
-    }
-
-    /**
-     * Добавить данные сверки
-     */
-    public function addVerification($data)
-    {
-        $required = [
-            'courier_id',
-            'worked_hours',
-            'orders_count',
-            'total_amount',
-            'record_date',
-            'period_from',
-            'period_to'
-        ];
-
-        foreach ($required as $field) {
-            if (empty($data[$field])) {
-                throw new Exception("Обязательное поле {$field} не заполнено");
-            }
-        }
-
-        // Проверяем, нет ли уже данных за этот период
-        $existing = $this->getByCourierAndPeriod($data['courier_id'], $data['period_from'], $data['period_to']);
-        if ($existing) {
-            throw new Exception("Данные за указанный период уже существуют");
-        }
-
-        return $this->db->insert($this->table, $data);
     }
 
     /**
@@ -154,7 +167,7 @@ class VerificationData extends Model
             FROM {$this->table} v
             LEFT JOIN candidates c ON v.courier_id = c.courier_id
             ORDER BY v.created_at DESC";
-            
+
             log_debug('SQL query prepared', ['sql' => $sql]);
 
             $result = $this->db->query($sql)->fetchAll();
@@ -198,5 +211,14 @@ class VerificationData extends Model
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)";
         $result = $this->db->query($sql, [$days])->fetch();
         return $result['count'] ?? 0;
+    }
+
+
+    /**
+     * Получить все активные записи (для экспорта)
+     */
+    public function getAll($limit = 0, $offset = 0)
+    {
+        return $this->db->select($this->table, [], '*', 'id DESC', $limit, $offset);
     }
 }

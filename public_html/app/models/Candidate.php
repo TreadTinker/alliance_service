@@ -6,6 +6,39 @@ class Candidate extends Model
     protected string $primaryKey = 'id';
 
     /**
+     * Создать кандидата (совместим с Model::create)
+     */
+    public function create(array $data): bool
+    {
+        $required = ['courier_id', 'full_name', 'city'];
+        
+        foreach ($required as $field) {
+            if (empty($data[$field])) {
+                throw new Exception("Обязательное поле {$field} не заполнено");
+            }
+        }
+
+        // Добавляем временные метки если их нет
+        if (!isset($data['created_at'])) {
+            $data['created_at'] = date('Y-m-d H:i:s');
+        }
+        if (!isset($data['updated_at'])) {
+            $data['updated_at'] = date('Y-m-d H:i:s');
+        }
+
+        return $this->db->insert($this->table, $data);
+    }
+
+    /**
+     * Создать кандидата и вернуть ID (для обратной совместимости)
+     */
+    public function createCandidate($data)
+    {
+        $result = $this->create($data);
+        return $result ? $this->db->lastInsertId() : false;
+    }
+
+    /**
      * Найти курьера по ID
      */
     public function findByCourierId($courierId)
@@ -54,21 +87,6 @@ class Candidate extends Model
         return $this->db->query($sql, ["%{$searchTerm}%"])->fetchAll();
     }
 
-    /**
-     * Создать нового курьера
-     */
-    public function createCandidate($data)
-    {
-        $required = ['courier_id', 'full_name', 'city', 'phone_number', 'manager_name', 'department'];
-        
-        foreach ($required as $field) {
-            if (empty($data[$field])) {
-                throw new Exception("Обязательное поле {$field} не заполнено");
-            }
-        }
-
-        return $this->db->insert($this->table, $data);
-    }
 
     /**
      * Обновить данные курьера
